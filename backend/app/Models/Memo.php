@@ -17,7 +17,7 @@ class Memo extends Model
         'url'
     ];
 
-    public function memos(): BelongsToMany
+    public function images(): BelongsToMany
     {
         return $this->belongsToMany(Image::class, 'memo_images', 'memo_id', 'image_id');
     }

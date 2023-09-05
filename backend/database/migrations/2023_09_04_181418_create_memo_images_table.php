@@ -16,8 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('image_id');
             $table->unsignedBigInteger('memo_id');
 
-            $table->foreign('image_id')->references('id')->on('images');
-            $table->foreign('memo_id')->references('id')->on('memo');
+            $table->foreign('image_id')->references('id')->on('images')->onDelete('cascade');
+            $table->foreign('memo_id')->references('id')->on('memo')->onDelete('cascade');
         });
     }
 
@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('images');
+        Schema::dropIfExists('memo_images');
     }
 };

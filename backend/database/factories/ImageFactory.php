@@ -20,7 +20,7 @@ class ImageFactory extends Factory
     public function definition(): array
     {
         $randomImageId = rand(1, 1000);
-        $imageUrl = "https://picsum.photos/id/{$randomImageId}/400/300";
+        $imageUrl = "https://picsum.photos/id/{$randomImageId}/100/100";
 
         return [
             'url' => $imageUrl,
