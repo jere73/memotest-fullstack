@@ -1,15 +1,11 @@
 import Image from 'next/image';
 import { Inter } from 'next/font/google';
-import { gql } from "@apollo/client";
-import client from "../apollo-client";
+import ClientOnly from '@/components/ClientOnly';
 import MemoList from '@/components/MemoList';
-import ClientOnly from "@/components/ClientOnly";
 
 const inter = Inter({ subsets: ['latin'] });
 
 export default function Home() {
-
-
 	return (
 		<main
 			className={`flex min-h-screen flex-col items-center justify-between p-24 ${inter.className}`}
@@ -24,10 +20,9 @@ export default function Home() {
 					priority
 				/>
 			</div>
-      <ClientOnly>
-          <MemoList />
-      </ClientOnly>
-
+			<ClientOnly>
+				<MemoList />
+			</ClientOnly>
 			<div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left"></div>
 		</main>
 	);

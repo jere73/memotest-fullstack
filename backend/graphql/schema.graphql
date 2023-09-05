@@ -59,6 +59,7 @@ type Memo {
     id: Int!
     name: String
     images: [Image!]! @belongsToMany
+    gameSessions: [GameSession] @hasMany
 }
 
 type GameSession {
