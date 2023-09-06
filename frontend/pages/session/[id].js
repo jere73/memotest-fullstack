@@ -1,30 +1,87 @@
 import Image from 'next/image';
-import { useRouter } from 'next/router'
+import { useRouter } from 'next/router';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import { useEffect, useState } from 'react';
+import Board from '@/components/Board/Board';
+import { Card, CardContent } from '@mui/material';
 
 export default function Page() {
-	const router = useRouter();
-	const [memoSelected, setMemoSelected] = useLocalStorage('memo_selected', {});
-
-	console.log(memoSelected);
-
-	return (
-		<main
-			className={`flex min-h-screen flex-col items-center justify-between p-24`}
-		>
-			<div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px] before:-translate-x-1/2 before:rounded-full before:bg-gradient-radial before:from-white before:to-transparent before:blur-2xl before:content-[''] after:absolute after:-z-20 after:h-[180px] after:w-[240px] after:translate-x-1/3 after:bg-gradient-conic after:from-sky-200 after:via-blue-200 after:blur-2xl after:content-[''] before:dark:bg-gradient-to-br before:dark:from-transparent before:dark:to-blue-700/10 after:dark:from-sky-900 after:dark:via-[#0141ff]/40 before:lg:h-[360px]">
-				<Image
-					className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
-					src="/next.svg"
-					alt="Next.js Logo"
-					width={180}
-					height={37}
-					priority
-				/>
-			</div>
-				{`Session n° ${router.query.id}`}
-			<div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left"></div>
-		</main>
+	const [shuffledMemoBlocks, setShuffledMemoBlocks] = useState([]);
+	const [selectedMemoBlock, setSelectedMemoBlock] = useState(null);
+	const [animating, setAnimating] = useState(false);
+	const [memoSelected, setMemoSelected] = useLocalStorage(
+		'memo_selected',
+		{}
 	);
 
+	useEffect(() => {
+		const imageArray = memoSelected.images.map((image, i) => image.url);
+
+		const shuffledImagesArray = shuffleArray([
+			...imageArray,
+			...imageArray,
+		]);
+
+		setShuffledMemoBlocks(
+			shuffledImagesArray.map((image, i) => ({
+				index: i,
+				image,
+				flipped: false,
+			}))
+		);
+	}, []);
+
+	function shuffleArray(array) {
+		const shuffledArray = [...array];
+
+		function compareRandom() {
+			return Math.random() - 0.5;
+		}
+
+		shuffledArray.sort(compareRandom);
+
+		return shuffledArray;
+	}
+
+	const handleMemoClick = (memoBlock) => {
+		console.log(memoBlock);
+
+		const flippedMemoBlock = { ...memoBlock, flipped: true };
+		let shuffledMemoBlocksCopy = [...shuffledMemoBlocks];
+		shuffledMemoBlocksCopy.splice(memoBlock.index, 1, flippedMemoBlock);
+		setShuffledMemoBlocks(shuffledMemoBlocksCopy);
+
+		if (selectedMemoBlock === null) {
+			setSelectedMemoBlock(memoBlock);
+		} else if (selectedMemoBlock.image === memoBlock.image) {
+			setSelectedMemoBlock(null);
+		} else {
+			setAnimating(true);
+			setTimeout(() => {
+				shuffledMemoBlocksCopy.splice(memoBlock.index, 1, memoBlock);
+				shuffledMemoBlocksCopy.splice(
+					selectedMemoBlock.index,
+					1,
+					selectedMemoBlock
+				);
+				setShuffledMemoBlocks(shuffledMemoBlocksCopy);
+				setSelectedMemoBlock(null);
+				setAnimating(false);
+			}, 1000);
+		}
+	};
+
+	return (
+		<>
+			<Card>
+				<CardContent>
+					<Board
+						memoBlocks={shuffledMemoBlocks}
+						animating={animating}
+						handleMemoClick={handleMemoClick}
+					/>
+				</CardContent>
+			</Card>
+		</>
+	);
 }
