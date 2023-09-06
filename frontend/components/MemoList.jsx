@@ -41,8 +41,14 @@ const QUERY = gql`
 const MemoList = ({ playpage }) => {
 	const [memos, setMemos] = useState([]);
 	const router = useRouter();
-	const [memosLocalStorage, setMemosLocalStorage] = useLocalStorage('memos', []);
-	const [memoSelected, setMemoSelected] = useLocalStorage('memo_selected', {});
+	const [memosLocalStorage, setMemosLocalStorage] = useLocalStorage(
+		'memos',
+		[]
+	);
+	const [memoSelected, setMemoSelected] = useLocalStorage(
+		'memo_selected',
+		{}
+	);
 	const { loading, data } = useQuery(QUERY, {
 		onCompleted: () => {
 			setMemos(data.memos);
@@ -54,11 +60,11 @@ const MemoList = ({ playpage }) => {
 
 	const handleButtonClick = (id) => {
 		const memoSelected = memosLocalStorage.filter((memo) => {
-			return memo.id === id
+			return memo.id === id;
 		})[0];
 		setMemoSelected(memoSelected);
 		router.push(`/session/${id}`);
-	}
+	};
 
 	return (
 		<Box sx={{ width: '100%', maxWidth: 600, bgcolor: 'background.paper' }}>
@@ -66,9 +72,13 @@ const MemoList = ({ playpage }) => {
 				{memos.map((memo) => (
 					<ListItem key={memo.id} className="my-10">
 						<ListItemText primary={memo.name} />
-							<Button onClick={() => handleButtonClick(memo.id)} variant="contained" endIcon={<SendIcon />}>
-								Let's play
-							</Button>
+						<Button
+							onClick={() => handleButtonClick(memo.id)}
+							variant="contained"
+							endIcon={<SendIcon />}
+						>
+							Let's play
+						</Button>
 					</ListItem>
 				))}
 			</List>
