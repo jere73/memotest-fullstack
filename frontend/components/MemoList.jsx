@@ -17,6 +17,9 @@ import {
 import DeleteIcon from '@mui/icons-material/Delete';
 import FolderIcon from '@mui/icons-material/Folder';
 import SendIcon from '@mui/icons-material/Send';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/router';
+import { useLocalStorage } from '@/hooks/useLocalStorage';
 
 const QUERY = gql`
 	query memos {
@@ -35,28 +38,37 @@ const QUERY = gql`
 	}
 `;
 
-const MemoList = () => {
-	const { data, loading, error } = useQuery(QUERY);
-	console.log(data);
+const MemoList = ({ playpage }) => {
+	const [memos, setMemos] = useState([]);
+	const router = useRouter();
+	const [memosLocalStorage, setMemosLocalStorage] = useLocalStorage('memos', []);
+	const [memoSelected, setMemoSelected] = useLocalStorage('memo_selected', {});
+	const { loading, data } = useQuery(QUERY, {
+		onCompleted: () => {
+			setMemos(data.memos);
+			setMemosLocalStorage(data.memos);
+		},
+	});
 
 	if (loading) return 'Loading...';
 
-	if (error) {
-		console.error(error);
-		return null;
+	const handleButtonClick = (id) => {
+		const memoSelected = memosLocalStorage.filter((memo) => {
+			return memo.id === id
+		})[0];
+		setMemoSelected(memoSelected);
+		router.push(`/session/${id}`);
 	}
 
-	const memos = data.memos;
-
 	return (
-		<Box sx={{ width: '100%', maxWidth: 760, bgcolor: 'background.paper' }}>
+		<Box sx={{ width: '100%', maxWidth: 600, bgcolor: 'background.paper' }}>
 			<List>
 				{memos.map((memo) => (
 					<ListItem key={memo.id} className="my-10">
-						<ListItemText primary={memo.name} className="mr-10" />
-						<Button variant="contained" endIcon={<SendIcon />}>
-							Let's play
-						</Button>
+						<ListItemText primary={memo.name} />
+							<Button onClick={() => handleButtonClick(memo.id)} variant="contained" endIcon={<SendIcon />}>
+								Let's play
+							</Button>
 					</ListItem>
 				))}
 			</List>
