@@ -1,5 +1,5 @@
 import React from 'react';
-import MemoBlock from '../MemoBlock/MemoBlock';
+import MemoBlock from './MemoBlock';
 
 const Board = ({ memoBlocks, animating, handleMemoClick, retries }) => {
 	return (

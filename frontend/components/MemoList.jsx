@@ -4,6 +4,7 @@ import SendIcon from '@mui/icons-material/Send';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
+import RecyclingIcon from '@mui/icons-material/Recycling';
 
 const QUERY = gql`
 	query memos {
@@ -12,6 +13,7 @@ const QUERY = gql`
 				number_of_pairs
 				retries
 				state
+				score
 			}
 			id
 			name
@@ -42,6 +44,9 @@ const CREATE_GAME_SESSION = gql`
 			retries
 			state
 			score
+			memo {
+				id
+			}
 		}
 	}
 `;
@@ -61,15 +66,40 @@ const MemoList = ({ playpage }) => {
 		useLocalStorage('game_session', {});
 	const { loading, data } = useQuery(QUERY, {
 		onCompleted: () => {
-			setMemos(data.memos);
-			setMemosLocalStorage(data.memos);
+			const fixedMemos = data.memos.map((memo) => {
+				const highestValue = getHighestValue(memo.gameSessions);
+				return { ...memo, high_score: highestValue };
+			});
+
+			setMemos(fixedMemos);
+			setMemosLocalStorage(fixedMemos);
 		},
 	});
 	const [createSession] = useMutation(CREATE_GAME_SESSION);
+	const [gameStarted, setGameStarted] = useState(false);
+
+	useEffect(() => {
+		if (
+			gameSessionLocalStorage &&
+			gameSessionLocalStorage.state === 'Started'
+		) {
+			setGameStarted(true);
+		}
+	});
+
+	const getHighestValue = (gameSessionArray) => {
+		return gameSessionArray.reduce((maxValue, object) => {
+			if (object.score > maxValue) {
+				return object.score;
+			} else {
+				return maxValue;
+			}
+		}, -Infinity);
+	};
 
 	if (loading) return 'Loading...';
 
-	const handleButtonClick = (id) => {
+	const handleStartNewGameButtonClick = (id) => {
 		const memoSelected = memosLocalStorage.filter((memo) => {
 			return memo.id === id;
 		})[0];
@@ -86,12 +116,21 @@ const MemoList = ({ playpage }) => {
 			onCompleted: (data) => {
 				const gameSessionObject = {
 					...data.createGameSession,
-					new: true
-				}
+					new: true,
+				};
 				setGameSessionLocalStorage(gameSessionObject);
 				router.push(`${playpage}/${id}`);
 			},
 		});
+	};
+
+	const handleContinueGameButtonClick = (id) => {
+		const memoSelected = memosLocalStorage.filter((memo) => {
+			return memo.id === id;
+		})[0];
+
+		setMemoSelected(memoSelected);
+		router.push(`${playpage}/${id}`);
 	};
 
 	return (
@@ -100,13 +139,31 @@ const MemoList = ({ playpage }) => {
 				{memos.map((memo) => (
 					<ListItem key={memo.id} className="my-10">
 						<ListItemText primary={memo.name} />
-						<Button
-							onClick={() => handleButtonClick(memo.id)}
-							variant="contained"
-							endIcon={<SendIcon />}
-						>
-							Let's play
-						</Button>
+						<p>{memo.high_score}</p>
+						{gameStarted &&
+						gameSessionLocalStorage.memo.id == memo.id ? (
+							<Button
+								onClick={() =>
+									handleContinueGameButtonClick(memo.id)
+								}
+								variant="contained"
+								endIcon={<RecyclingIcon />}
+								color="warning"
+							>
+								Continue
+							</Button>
+						) : (
+							<Button
+								onClick={() =>
+									handleStartNewGameButtonClick(memo.id)
+								}
+								variant="contained"
+								endIcon={<SendIcon />}
+								color="success"
+							>
+								Create New Game
+							</Button>
+						)}
 					</ListItem>
 				))}
 			</List>

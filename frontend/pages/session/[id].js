@@ -1,8 +1,9 @@
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useEffect, useState } from 'react';
-import Board from '@/components/Board/Board';
+import Board from '@/components/Board';
 import { useQuery, gql, useMutation } from '@apollo/client';
 import { useRouter } from 'next/router';
+import ScoreDialog from '@/components/ScoreDialog';
 
 const UPDATE_GAME_SESSION = gql`
 	mutation UpdateSession($id: ID!, $retries: Int, $state: StateField, $score: Float) {
@@ -32,11 +33,11 @@ export default function Page() {
 		[]
 	);
 	const [winner, setWinner] = useState(false);
+	const [openScoreDialog, setOpenScoreDialog] = useState(false);
 
 	useEffect(() => {
 		if (gameSessionLocalStorage.state === 'Completed' || winner) {
-			alert('Session completed!');
-			router.push(`/`);
+			setOpenScoreDialog(true);
 		}
 
 		if (gameSessionLocalStorage.new) {
@@ -133,6 +134,11 @@ export default function Page() {
 
 	}
 
+	const handleScoreDialogClose = () => {
+		setOpenScoreDialog(false);
+		router.push(`/`);
+	  };
+
 	const handleMemoClick = (memoBlock) => {
 		const flippedMemoBlock = { ...memoBlock, flipped: true };
 		let shuffledMemoBlocksCopy = [...shuffledMemoBlocks];
@@ -187,6 +193,11 @@ export default function Page() {
 				animating={animating}
 				handleMemoClick={handleMemoClick}
 				retries={gameSessionLocalStorage.retries}
+			/>
+			 <ScoreDialog
+				open={openScoreDialog}
+				handleClose={handleScoreDialogClose}
+				score={gameSessionLocalStorage.score}
 			/>
 		</>
 	);
