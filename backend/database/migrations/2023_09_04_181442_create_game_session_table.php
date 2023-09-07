@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('memo_id');
             $table->integer('retries');
             $table->integer('number_of_pairs');
+            $table->float('score')->nullable();
             $table->enum('state', ['Started', 'Completed']);
 
             $table->foreign('memo_id')->references('id')->on('memo');

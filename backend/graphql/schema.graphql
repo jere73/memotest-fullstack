@@ -9,14 +9,15 @@ type Mutation {
     updateImagesMemo(input: UpdateImagesMemoInput! @spread): Memo @update
     deleteMemo(id: ID! @whereKey): Memo @delete
     createGameSession(input: CreateGameSessionInput @spread): GameSession @create
-    updateGameSession(id: ID!, retries: Int, state: StateField): GameSession @update
+    updateGameSession(id: ID!, retries: Int, state: StateField, score: Float): GameSession @update
 }
 
 input CreateGameSessionInput {
-    memo: CreateGameSessionBelongsTo,
+    memo: CreateGameSessionBelongsTo
     retries: Int
     number_of_pairs: Int
     state: StateField
+    score: Float
 }
 
 input CreateGameSessionBelongsTo {
@@ -63,10 +64,12 @@ type Memo {
 }
 
 type GameSession {
+    id: Int!
     memo: Memo @belongsTo
     retries: Int
     number_of_pairs: Int
     state: StateField
+    score: Float
 }
 
 type Image {

@@ -1,33 +1,71 @@
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useEffect, useState } from 'react';
 import Board from '@/components/Board/Board';
+import { useQuery, gql, useMutation } from '@apollo/client';
+import { useRouter } from 'next/router';
+
+const UPDATE_GAME_SESSION = gql`
+	mutation UpdateSession($id: ID!, $retries: Int, $state: StateField, $score: Float) {
+		updateGameSession(id: $id, retries: $retries, state: $state, score: $score) {
+			id
+			number_of_pairs
+			retries
+			state
+		}
+	}
+`;
 
 export default function Page() {
+	const router = useRouter();
 	const [shuffledMemoBlocks, setShuffledMemoBlocks] = useState([]);
 	const [selectedMemoBlock, setSelectedMemoBlock] = useState(null);
 	const [animating, setAnimating] = useState(false);
-	const [retries, setRetries] = useState(0);
+	const [updateSessionMutation] = useMutation(UPDATE_GAME_SESSION);
+	const [gameSessionLocalStorage, setGameSessionLocalStorage] =
+		useLocalStorage('game_session', {});
 	const [memoSelected, setMemoSelected] = useLocalStorage(
 		'memo_selected',
 		{}
 	);
+	const [sessionImages, setSessionImages] = useLocalStorage(
+		'session_images',
+		[]
+	);
+	const [winner, setWinner] = useState(false);
 
 	useEffect(() => {
-		const imageArray = memoSelected.images.map((image, i) => image.url);
+		if (gameSessionLocalStorage.state === 'Completed' || winner) {
+			alert('Session completed!');
+			router.push(`/`);
+		}
 
-		const shuffledImagesArray = shuffleArray([
-			...imageArray,
-			...imageArray,
-		]);
+		if (gameSessionLocalStorage.new) {
+			const imageArray = memoSelected.images.map((image, i) => image.url);
 
-		setShuffledMemoBlocks(
-			shuffledImagesArray.map((image, i) => ({
+			const shuffledImagesArray = shuffleArray([
+				...imageArray,
+				...imageArray,
+			]);
+
+			const shuffledImages = shuffledImagesArray.map((image, i) => ({
 				index: i,
 				image,
 				flipped: false,
-			}))
-		);
-	}, []);
+			}));
+
+			setShuffledMemoBlocks(shuffledImages);
+			setSessionImages(shuffledImages);
+
+			setGameSessionLocalStorage({
+				...gameSessionLocalStorage,
+				new: false,
+			});
+
+			return;
+		}
+
+		setShuffledMemoBlocks(sessionImages);
+	}, [winner]);
 
 	function shuffleArray(array) {
 		const shuffledArray = [...array];
@@ -41,6 +79,60 @@ export default function Page() {
 		return shuffledArray;
 	}
 
+	const updateRetriesGameSession = () => {
+		const updateVariables = {
+			id: gameSessionLocalStorage.id,
+			retries: gameSessionLocalStorage.retries + 1,
+		};
+
+		updateSessionMutation({
+			variables: updateVariables,
+			onCompleted: () => {
+				setGameSessionLocalStorage({
+					...gameSessionLocalStorage,
+					retries: gameSessionLocalStorage.retries + 1,
+				});
+			},
+		});
+	};
+
+	const checkWinner = (images) => {
+		const imagesCheck = images.filter((image) => {
+			return image.flipped === false;
+		});
+
+		if (imagesCheck.length === 0) {
+
+			const scoreCalculated = calculateScore();
+			console.log(scoreCalculated);
+
+			updateSessionMutation({
+				variables: {
+					id: gameSessionLocalStorage.id,
+					state: 'Completed',
+					score: scoreCalculated
+				},
+				onCompleted: () => {
+					setGameSessionLocalStorage({
+						...gameSessionLocalStorage,
+						state: 'Completed',
+						score: scoreCalculated
+					});
+					setWinner(true);
+				},
+			});
+		}
+	};
+
+	const calculateScore = () => {
+		const finalRetries = gameSessionLocalStorage.retries;
+		const finalNumberOfPairs = gameSessionLocalStorage.number_of_pairs;
+		const result = (finalNumberOfPairs / finalRetries) * 100;
+
+		return Number(result.toFixed(2));
+
+	}
+
 	const handleMemoClick = (memoBlock) => {
 		const flippedMemoBlock = { ...memoBlock, flipped: true };
 		let shuffledMemoBlocksCopy = [...shuffledMemoBlocks];
@@ -50,11 +142,30 @@ export default function Page() {
 		if (selectedMemoBlock === null) {
 			setSelectedMemoBlock(memoBlock);
 		} else if (selectedMemoBlock.image === memoBlock.image) {
+			const selectedMemoblockFlipped = {
+				...selectedMemoBlock,
+				flipped: true,
+			};
+			const memoblockFlipped = { ...memoBlock, flipped: true };
+
+			shuffledMemoBlocksCopy.splice(
+				memoblockFlipped.index,
+				1,
+				memoblockFlipped
+			);
+			shuffledMemoBlocksCopy.splice(
+				selectedMemoblockFlipped.index,
+				1,
+				selectedMemoblockFlipped
+			);
+			setSessionImages(shuffledMemoBlocksCopy);
+			setShuffledMemoBlocks(shuffledMemoBlocksCopy);
 			setSelectedMemoBlock(null);
-			setRetries(retries + 1);
+			updateRetriesGameSession();
+			checkWinner(shuffledMemoBlocksCopy);
 		} else {
 			setAnimating(true);
-			setRetries(retries + 1);
+			updateRetriesGameSession();
 			setTimeout(() => {
 				shuffledMemoBlocksCopy.splice(memoBlock.index, 1, memoBlock);
 				shuffledMemoBlocksCopy.splice(
@@ -75,7 +186,7 @@ export default function Page() {
 				memoBlocks={shuffledMemoBlocks}
 				animating={animating}
 				handleMemoClick={handleMemoClick}
-				retries={retries}
+				retries={gameSessionLocalStorage.retries}
 			/>
 		</>
 	);

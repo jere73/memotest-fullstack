@@ -17,7 +17,8 @@ class GameSession extends Model
         'memo_id',
         'retries',
         'number_of_pairs',
-        'state'
+        'state',
+        'score'
     ];
 
     public function memo(): BelongsTo
