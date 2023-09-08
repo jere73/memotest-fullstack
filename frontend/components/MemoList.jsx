@@ -94,7 +94,7 @@ const MemoList = ({ playpage }) => {
 			} else {
 				return maxValue;
 			}
-		}, -Infinity);
+		}, 0);
 	};
 
 	if (loading) return 'Loading...';
