@@ -1,4 +1,3 @@
-import { Card, CardMedia } from '@mui/material';
 import React from 'react';
 
 const MemoBlock = ({ memoBlock, animating, handleMemoClick }) => (
@@ -15,7 +14,7 @@ const MemoBlock = ({ memoBlock, animating, handleMemoClick }) => (
 		>
 			<div className="memo-block-front">
 				<div className="h-32 flex items-center justify-center">
-					<h1 className="text-4xl font-bold">
+					<h1 className="text-4xl font-bold text-amber-200">
 						{memoBlock.index + 1}
 					</h1>
 				</div>

@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import RecyclingIcon from '@mui/icons-material/Recycling';
+import { STARTED_STATE } from '@/constants/constants';
 
 const QUERY = gql`
 	query memos {
@@ -81,7 +82,7 @@ const MemoList = ({ playpage }) => {
 	useEffect(() => {
 		if (
 			gameSessionLocalStorage &&
-			gameSessionLocalStorage.state === 'Started'
+			gameSessionLocalStorage.state === STARTED_STATE
 		) {
 			setGameStarted(true);
 		}
@@ -110,7 +111,7 @@ const MemoList = ({ playpage }) => {
 			variables: {
 				number_of_pairs: memoSelected.images.length * 2,
 				retries: 0,
-				state: 'Started',
+				state: STARTED_STATE,
 				memo: { connect: memoSelected.id },
 			},
 			onCompleted: (data) => {
@@ -138,8 +139,10 @@ const MemoList = ({ playpage }) => {
 			<List>
 				{memos.map((memo) => (
 					<ListItem key={memo.id} className="my-10">
-						<ListItemText primary={memo.name} />
-						<p>{memo.high_score}</p>
+						<ListItemText
+							primary={memo.name}
+							secondary={`Highest score: ${memo.high_score}`}
+						/>
 						{gameStarted &&
 						gameSessionLocalStorage.memo.id == memo.id ? (
 							<Button
@@ -159,9 +162,9 @@ const MemoList = ({ playpage }) => {
 								}
 								variant="contained"
 								endIcon={<SendIcon />}
-								color="success"
+								color="secondary"
 							>
-								Create New Game
+								Start New Game
 							</Button>
 						)}
 					</ListItem>

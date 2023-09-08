@@ -1,13 +1,26 @@
 import { useLocalStorage } from '@/hooks/useLocalStorage';
 import { useEffect, useState } from 'react';
 import Board from '@/components/Board';
-import { useQuery, gql, useMutation } from '@apollo/client';
+import { gql, useMutation } from '@apollo/client';
 import { useRouter } from 'next/router';
 import ScoreDialog from '@/components/ScoreDialog';
+import { Container, Typography, Button } from '@mui/material';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import { COMPLETED_STATE } from '@/constants/constants';
 
 const UPDATE_GAME_SESSION = gql`
-	mutation UpdateSession($id: ID!, $retries: Int, $state: StateField, $score: Float) {
-		updateGameSession(id: $id, retries: $retries, state: $state, score: $score) {
+	mutation UpdateSession(
+		$id: ID!
+		$retries: Int
+		$state: StateField
+		$score: Float
+	) {
+		updateGameSession(
+			id: $id
+			retries: $retries
+			state: $state
+			score: $score
+		) {
 			id
 			number_of_pairs
 			retries
@@ -36,7 +49,7 @@ export default function Page() {
 	const [openScoreDialog, setOpenScoreDialog] = useState(false);
 
 	useEffect(() => {
-		if (gameSessionLocalStorage.state === 'Completed' || winner) {
+		if (gameSessionLocalStorage.state === COMPLETED_STATE || winner) {
 			setOpenScoreDialog(true);
 		}
 
@@ -103,21 +116,19 @@ export default function Page() {
 		});
 
 		if (imagesCheck.length === 0) {
-
 			const scoreCalculated = calculateScore();
-			console.log(scoreCalculated);
 
 			updateSessionMutation({
 				variables: {
 					id: gameSessionLocalStorage.id,
-					state: 'Completed',
-					score: scoreCalculated
+					state: COMPLETED_STATE,
+					score: scoreCalculated,
 				},
 				onCompleted: () => {
 					setGameSessionLocalStorage({
 						...gameSessionLocalStorage,
-						state: 'Completed',
-						score: scoreCalculated
+						state: COMPLETED_STATE,
+						score: scoreCalculated,
 					});
 					setWinner(true);
 				},
@@ -131,13 +142,12 @@ export default function Page() {
 		const result = (finalNumberOfPairs / finalRetries) * 100;
 
 		return Number(result.toFixed(2));
-
-	}
+	};
 
 	const handleScoreDialogClose = () => {
 		setOpenScoreDialog(false);
 		router.push(`/`);
-	  };
+	};
 
 	const handleMemoClick = (memoBlock) => {
 		const flippedMemoBlock = { ...memoBlock, flipped: true };
@@ -186,19 +196,43 @@ export default function Page() {
 		}
 	};
 
+	const handleBackHome = () => {
+		router.push(`/`);
+	}
+
 	return (
-		<>
+		<div className="py-10">
+			<Container className="my-10">
+				<Typography variant="h2" gutterBottom className="text-center">
+					<span className="text-violet-700 uppercase font-thin">
+						{memoSelected.name}
+					</span>
+				</Typography>
+				<Typography variant="h4" gutterBottom className="text-center">
+					<span className="uppercase font-thin">Game Board</span>
+				</Typography>
+			</Container>
 			<Board
 				memoBlocks={shuffledMemoBlocks}
 				animating={animating}
 				handleMemoClick={handleMemoClick}
 				retries={gameSessionLocalStorage.retries}
 			/>
-			 <ScoreDialog
+			<Container className='text-center my-10'>
+				<Button
+					onClick={handleBackHome}
+					variant="contained"
+					color="secondary"
+					startIcon={<ArrowBackIcon />}
+				>
+					Return Home
+				</Button>
+			</Container>
+			<ScoreDialog
 				open={openScoreDialog}
 				handleClose={handleScoreDialogClose}
 				score={gameSessionLocalStorage.score}
 			/>
-		</>
+		</div>
 	);
 }

@@ -31,7 +31,7 @@ body {
   grid-template-columns: repeat(4, 1fr);
   grid-gap: 10px;
   max-width: 550px;
-  margin: 100px auto;
+  margin: 50px auto;
 }
 
 .memo-block {
@@ -62,7 +62,7 @@ body {
 }
 
 .memo-block-back {
-  background-color: #EF626C;
+  background-color: #FFEF64;
   transform: rotateY(180deg);
   box-shadow: 5px 5px 10px 0px rgb(0 0 0 / 50%);
   display: flex;
@@ -72,5 +72,5 @@ body {
 }
 
 .memo-block-front {
-  background-color: #84DCCF;
+  background-color:  #a55eea;
 }
