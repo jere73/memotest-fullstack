@@ -81,7 +81,7 @@ export default function Page() {
 		setShuffledMemoBlocks(sessionImages);
 	}, [winner]);
 
-	function shuffleArray(array) {
+	const shuffleArray = (array) => {
 		const shuffledArray = [...array];
 
 		function compareRandom() {
