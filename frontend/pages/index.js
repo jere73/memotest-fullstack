@@ -23,7 +23,7 @@ export default function Home() {
 			<Typography variant="h1" gutterBottom>
 				 <span className='text-violet-700'>HEYTUTOR</span> - MEMOTEST 
 			</Typography>
-			<MemoList playpage={'/session'}/>
+			<MemoList playpage={'/memo'}/>
 			<div className="mb-32 grid text-center lg:max-w-5xl lg:w-full lg:mb-0 lg:grid-cols-4 lg:text-left"></div>
 		</main>
 	);
