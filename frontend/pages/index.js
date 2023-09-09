@@ -12,7 +12,7 @@ export default function Home() {
 		>
 			<div className="relative flex place-items-center before:absolute before:h-[300px] before:w-[480px]">
 				<Image
-					className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70] dark:invert"
+					className="relative dark:drop-shadow-[0_0_0.3rem_#ffffff70]"
 					src="/ht-logo.svg"
 					alt="ht Logo"
 					width={180}
