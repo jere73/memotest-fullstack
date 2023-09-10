@@ -40,7 +40,7 @@ This creates a small php container to install Composer and all of dependencies i
 * For detach container execution you should use:
 
     `sail up -d`
-* Wile containers are running, you must to run database migrations and seeders to create and fill with data the required tables for this project:
+* While containers are running, you must to run database migrations and seeders to create and fill with data the required tables for this project:
 
     `sail artisan migrate`
     `sail artisan db:seed`
